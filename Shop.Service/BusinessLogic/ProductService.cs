@@ -23,12 +23,38 @@ namespace Shop.Service.BusinessLogic
             var product = new List<ProductDTO>();
             foreach (var item in productdata)
             {
+                decimal finalPrice = item.ProductPrice;
+
+                if (item.Coupon != null && item.Coupon.ExpiryDate >= DateTime.UtcNow)
+                {
+                    if (item.Coupon.DiscountType == "Cash-Off")
+                    {
+                        finalPrice = item.ProductPrice - item.Coupon.DiscountValue;
+                    }
+                    else if (item.Coupon.DiscountType == "Percentage")
+                    {
+                        finalPrice = item.ProductPrice * (1 - (item.Coupon.DiscountValue / 100));
+                    }
+                }
                 product.Add(new ProductDTO()
                 {
                     ProductId = item.ProductId,
                     ProductName = item.ProductName,
                     ProductPrice = (int)item.ProductPrice,
-                    DiscountAmount = (int)item.DiscountAmount
+                    DiscountAmount = (int)(item.ProductPrice - finalPrice),  
+
+                    DiscountType = item.Coupon != null ?
+                (item.Coupon.DiscountType == "Cash-Off" ? "Cash-Off" : "Percentage") : "-",
+
+                    supplier = item.Supplier != null ? new SupplierDTO()
+                    {
+                        SupplierId = item.Supplier.SupplierId,
+                        SupplierName = item.Supplier.SupplierName,
+                        AgencyName = item.Supplier.AgencyName,
+                        Contact = item.Supplier.Contact,
+                        Address = item.Supplier.Address,
+                        City = item.Supplier.City
+                    } : null
                 });
             }
             return product;
@@ -75,11 +101,11 @@ namespace Shop.Service.BusinessLogic
             }
             return null;
         }
-        public ProductDTO Update(Guid ProductId, AddProductDTO input)
+        public ProductDTO Update(Guid id, AddProductDTO input)
         {
             var supplierid = _supplierData.GetSupplierIdBySupplierName(input.SupplierName);
             var couponid = _couponData.GetCouponIdByCouponCode(input.CouponCode);
-            var product = _data.GetById(ProductId);
+            var product = _data.GetById(id);
             if (supplierid != null && couponid != null & product != null)
             {
                 product.SupplierId = supplierid.Value;
@@ -99,9 +125,9 @@ namespace Shop.Service.BusinessLogic
             }
             return null;
         }
-        public bool Delete(Guid ProductId)
+        public bool Delete(Guid id)
         {
-            var product = _data.GetById(ProductId);
+            var product = _data.GetById(id);
             if (product == null)
             {
                 return false;
@@ -109,9 +135,7 @@ namespace Shop.Service.BusinessLogic
             _data.Delete(product);
             return true;
         }
-       
     }
 }
-
 
 

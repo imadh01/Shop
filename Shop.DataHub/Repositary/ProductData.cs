@@ -1,4 +1,5 @@
-﻿using Shop.DataHub.Models.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using Shop.DataHub.Models.Domain;
 
 namespace Shop.DataHub.Repositary
 {
@@ -11,7 +12,7 @@ namespace Shop.DataHub.Repositary
         }
         public List<Product> Get()
         {
-            var product = _context.Products.ToList();
+            var product = _context.Products.Include("Coupon").Include("Supplier").ToList();
             return product;
         }
         public Product GetById(Guid id)
