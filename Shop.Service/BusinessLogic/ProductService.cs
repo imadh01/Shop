@@ -54,7 +54,15 @@ namespace Shop.Service.BusinessLogic
                         Contact = item.Supplier.Contact,
                         Address = item.Supplier.Address,
                         City = item.Supplier.City
+                    } : null,
+                    coupon = item.Coupon != null ? new CouponDTO()
+                    {
+                        CouponId = item.Coupon.CouponId,
+                        CouponCode = item.Coupon.CouponCode,
+                        ExpiryDate = item.Coupon.ExpiryDate,
+                        DiscountValue = item.Coupon.DiscountValue,
                     } : null
+
                 });
             }
             return product;
